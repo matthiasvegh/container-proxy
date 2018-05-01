@@ -12,9 +12,15 @@ def communicate_with_server(connection, command_line):
         for e in element:
             message.append(ord(e))
     connection.send(bytes(message))
+    return_code = int(connection.recv(1)[0])
+    sys.exit(return_code)
 
 def main():
     command_line = sys.argv
+    # TODO: Do this properly
+    command = command_line[0]
+    patched_command = command[command.rfind('/')+1:]
+    command_line[0] = patched_command
     socket_location = '/tmp/container_proxy.sock'
     connection = container_proxy.ipc.client_connection(socket_location)
     try:

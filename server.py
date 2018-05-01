@@ -1,8 +1,18 @@
 #!/usr/bin/env python3
 
 import argparse
+import subprocess
 
 import container_proxy.ipc
+
+class run_handler(object):
+    def __init__(self):
+        pass
+
+    def __call__(self, arguments):
+        print('spawning process')
+        print(arguments)
+        return subprocess.call(arguments)
 
 def main():
     parser = argparse.ArgumentParser(
@@ -15,7 +25,8 @@ def main():
     args = parser.parse_args()
     socket_location = args.socket
 
-    connection = container_proxy.ipc.server_connection(socket_location)
+    connection = container_proxy.ipc.server_connection(
+        socket_location, run_handler())
     connection.listen()
 
 if __name__ == '__main__':

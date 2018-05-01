@@ -10,3 +10,6 @@ class client_connection(object):
 
     def send(self, message):
         self.sock.sendall(message)
+
+    def recv(self, count):
+        return self.sock.recv(count)

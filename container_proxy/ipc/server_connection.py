@@ -2,8 +2,9 @@ import os
 import socket
 
 class server_connection(object):
-    def __init__(self, path):
+    def __init__(self, path, run_handler):
         self.path = path
+        self.run_handler = run_handler
         self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         try:
             os.unlink(self.path)
@@ -23,5 +24,6 @@ class server_connection(object):
                 argument = connection.recv(argument_length).decode('utf-8')
                 arguments.append(argument)
 
-            print(arguments)
-
+            result = self.run_handler(arguments)
+            connection.send(bytes([result]))
+            connection.close()
