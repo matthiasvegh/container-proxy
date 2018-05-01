@@ -9,10 +9,21 @@ class run_handler(object):
     def __init__(self):
         pass
 
-    def __call__(self, arguments):
+    def __call__(self, arguments, on_stdout, on_stderr):
         print('spawning process')
         print(arguments)
-        return subprocess.call(arguments)
+        process = subprocess.Popen(
+            arguments, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        while True:
+            outline = process.stdout.readline()
+            errline = process.stderr.readline()
+            if outline:
+                on_stdout(outline)
+            if errline:
+                on_stderr(errline)
+            return_code = process.poll()
+            if return_code != None:
+                return return_code
 
 def main():
     parser = argparse.ArgumentParser(

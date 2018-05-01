@@ -1,5 +1,8 @@
+import functools
 import os
 import socket
+
+from .protocol_constants import TERMINATION, STDOUT, STDERR
 
 class server_connection(object):
     def __init__(self, path, run_handler):
@@ -24,6 +27,19 @@ class server_connection(object):
                 argument = connection.recv(argument_length).decode('utf-8')
                 arguments.append(argument)
 
-            result = self.run_handler(arguments)
-            connection.send(bytes([result]))
+            result = self.run_handler(
+                arguments,
+                on_stdout=functools.partial(self.on_stdout, connection),
+                on_stderr=functools.partial(self.on_stderr, connection))
+            connection.send(bytes([TERMINATION, result]))
             connection.close()
+
+    def on_stdout(self, connection, output):
+        message = bytes([STDOUT, len(output)])
+        message += output
+        connection.send(message)
+
+    def on_stderr(self, connection, output):
+        message = bytes([STDERR, len(output)])
+        message += output
+        connection.send(message)

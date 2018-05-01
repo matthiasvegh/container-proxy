@@ -4,6 +4,7 @@ import socket
 import sys
 
 import container_proxy.ipc
+from container_proxy.ipc.protocol_constants import TERMINATION, STDOUT, STDERR
 
 def communicate_with_server(connection, command_line):
     message = [len(command_line)]
@@ -12,8 +13,21 @@ def communicate_with_server(connection, command_line):
         for e in element:
             message.append(ord(e))
     connection.send(bytes(message))
-    return_code = int(connection.recv(1)[0])
-    sys.exit(return_code)
+    while True:
+        message_code = int(connection.recv(1)[0])
+        if message_code == TERMINATION:
+            return_code = int(connection.recv(1)[0])
+            sys.exit(return_code)
+        elif message_code == STDOUT or message_code == STDERR:
+            length = int(connection.recv(1)[0])
+            content = connection.recv(length).decode('utf-8')
+            # Print without newlines, they are already present
+            if message_code == STDOUT:
+                print(content, end='')
+            if message_code == STDERR:
+                print(content, end='', file=sys.stderr)
+        else:
+            print('got unimplemented message code!')
 
 def main():
     command_line = sys.argv
