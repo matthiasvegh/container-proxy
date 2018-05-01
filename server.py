@@ -19,11 +19,12 @@ class run_handler(object):
             errline = process.stderr.readline()
             if outline:
                 on_stdout(outline)
-            if errline:
+            elif errline:
                 on_stderr(errline)
-            return_code = process.poll()
-            if return_code != None:
-                return return_code
+            else:
+                return_code = process.poll()
+                if return_code != None:
+                    return return_code
 
 def main():
     parser = argparse.ArgumentParser(
